@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Facebook UI Clone</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <style>
+    :root { --blue:#1877f2; --bg:#f0f2f5; --card:#fff; --text:#050505; --muted:#65676b; --border:#e4e6eb; --radius:8px; --shadow:0 1px 2px rgba(0,0,0,.1); --nav:56px; --bottom:56px; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    html,body { width:100%; overflow-x:hidden; }
+    body { min-width:375px; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:var(--bg); color:var(--text); line-height:1.4; }
+    img { width:100%; max-width:100%; display:block; }
+    button,input { font:inherit; }
+
+    .tap,.icon-btn,.nav-btn,.bottom-btn,.post-btn,.item-btn,.action-btn { min-height:44px; transition:all .2s ease; }
+    .top-nav { position:fixed; inset:0 0 auto 0; height:var(--nav); background:#fff; border-bottom:1px solid var(--border); z-index:1000; display:grid; grid-template-columns:auto 1fr auto; gap:4px; align-items:center; padding:0 8px; }
+    .left,.center,.right { display:flex; align-items:center; min-width:0; }
+    .left { gap:6px; }
+    .center { justify-content:center; gap:2px; overflow:hidden; }
+    .right { gap:4px; justify-content:flex-end; }
+    .logo { width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;font-size:24px;font-weight:700;display:inline-flex;align-items:center;justify-content:center; }
+    .search { width:40px;height:40px;border-radius:999px;background:var(--bg);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;overflow:hidden; }
+    .search input { display:none;border:none;outline:none;background:transparent;width:100%; }
+
+    .nav-btn { border:none;background:transparent;border-radius:8px;color:var(--muted);min-width:44px;padding:0 6px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;position:relative; }
+    .nav-btn .label { display:none; }
+    .nav-btn.active { color:var(--blue); }
+    .nav-btn.active::after { content:"";position:absolute;left:6px;right:6px;bottom:-6px;height:3px;border-radius:999px;background:var(--blue); }
+    .desktop-only { display:none; }
+    .icon-btn { width:40px;height:40px;border:none;border-radius:50%;background:var(--bg);color:var(--text);cursor:pointer;display:inline-flex;align-items:center;justify-content:center; }
+    .avatar { width:40px;height:40px;border-radius:50%;object-fit:cover; }
+    .avatar.sm { width:32px;height:32px; }
+    .avatar.xs { width:28px;height:28px; }
+
+    .app { padding-top:calc(var(--nav) + 8px); padding-bottom:calc(var(--bottom) + 14px); }
+    .layout { width:100%; }
+    .left-sidebar,.right-sidebar { display:none; }
+    .content { width:100%; min-width:0; max-width:100%; }
+    .page { display:none; }
+    .page.active { display:block; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:12px; overflow:hidden; }
+
+    .create { padding:12px; }
+    .create-top { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+    .mind { width:100%; border:none;outline:none;background:var(--bg);border-radius:999px;min-height:44px;padding:0 14px; }
+    .line { height:1px;background:var(--border);margin:8px 0; }
+    .create-actions { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+    .pill { border:none;border-radius:8px;background:transparent;color:var(--muted);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px; }
+
+    .stories { padding:10px; }
+    .stories-row { display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none; }
+    .stories-row::-webkit-scrollbar { display:none; }
+    .story { width:68px;height:120px;border-radius:12px;overflow:hidden;position:relative;flex:0 0 auto;background:#dce1ea;cursor:pointer; }
+    .story img { height:100%;object-fit:cover; }
+    .story .overlay { position:absolute;inset:50% 0 0 0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent);display:flex;align-items:flex-end;padding:8px;color:#fff;font-size:11px;font-weight:600;white-space:normal; }
+    .story.create-story { background:#fff;border:1px solid var(--border); }
+    .story.create-story .plus { position:absolute;left:50%;top:22px;transform:translateX(-50%);width:30px;height:30px;border-radius:50%;background:var(--blue);color:#fff;display:inline-flex;align-items:center;justify-content:center;border:3px solid #fff; }
+    .story.create-story .labelx { position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:11px;font-weight:700; }
+
+    .post-head,.post-body,.post-react,.post-actions,.comments { padding:12px; }
+    .post-head { display:flex;justify-content:space-between;align-items:flex-start;gap:8px; }
+    .post-user { display:flex;gap:8px; }
+    .meta .name { font-size:15px;font-weight:700; }
+    .meta .time { font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:4px; }
+    .dots { width:36px;height:36px;border:none;border-radius:50%;background:transparent;color:var(--muted);cursor:pointer; }
+    .post-text { margin-bottom:10px;word-break:break-word; }
+    .post-image { width:100%;max-height:400px;object-fit:cover;border-radius:8px; }
+    .post-react { font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap; }
+    .post-react .likes { display:inline-flex;align-items:center;gap:6px; }
+    .like-dot { width:18px;height:18px;border-radius:50%;background:var(--blue);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px; }
+    .post-actions { border-top:1px solid var(--border); display:grid;grid-template-columns:repeat(3,1fr);gap:6px; }
+    .post-btn { border:none;border-radius:8px;background:transparent;color:var(--muted);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px; }
+    .post-btn.liked { color:var(--blue); }
+
+    .comments { display:none;border-top:1px solid var(--border);background:#fcfcfd; }
+    .comments.open { display:block; }
+    .comment { display:flex;gap:8px;margin-bottom:8px; }
+    .bubble { background:#eef0f3;border-radius:14px;padding:8px 10px;font-size:13px;flex:1; }
+    .comment-input { width:100%;border:none;outline:none;background:#eef0f3;border-radius:999px;min-height:44px;padding:0 12px; }
+
+    .header-row { display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--border); }
+    .header-row h2 { font-size:20px; }
+    .grid { display:grid;grid-template-columns:1fr;gap:12px;padding:12px; }
+    .tile { border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#fff;box-shadow:var(--shadow); }
+    .tile img { height:170px;object-fit:cover; }
+    .tile .body { padding:10px; }
+    .tile h4 { font-size:16px;margin-bottom:4px; }
+    .tile p { color:var(--muted);font-size:13px; }
+    .profile-cover { height:200px;overflow:hidden;border-radius:12px; }
+    .profile-cover img { height:100%;object-fit:cover; }
+    .profile-main { padding:12px;margin-top:-40px; }
+    .profile-main .avatar { width:104px;height:104px;border:4px solid #fff; }
+    .profile-actions { display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px; }
+    .action-btn { border:none;border-radius:8px;cursor:pointer;font-weight:600; }
+    .action-btn.blue { background:var(--blue);color:#fff; }
+    .action-btn.gray { background:#e4e6eb; }
+
+    .bottom-nav { position:fixed;inset:auto 0 0 0;height:var(--bottom);background:#fff;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(6,1fr);z-index:1000; }
+    .bottom-btn { border:none;background:transparent;color:var(--muted);font-size:18px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center; }
+    .bottom-btn.active { color:var(--blue); }
+
+    .panel { position:fixed;top:calc(var(--nav) + 6px);right:8px;width:min(340px,calc(100vw - 16px));background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.16);z-index:1200;display:none; }
+    .panel.open { display:block; }
+    .panel .title { padding:12px;border-bottom:1px solid var(--border);font-weight:700; }
+    .panel .body { padding:10px;max-height:55vh;overflow-y:auto; }
+    .item-btn { width:100%;border:none;background:transparent;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:10px;padding:0 10px;text-align:left; }
+
+    .messenger,.chat { display:none; }
+
+    .icon-btn:hover,.nav-btn:hover,.bottom-btn:hover,.post-btn:hover,.pill:hover,.item-btn:hover,.dots:hover { background:#f2f3f5; }
+
+    @media (min-width:768px) {
+      .top-nav { padding:0 12px;gap:10px; }
+      .search { width:230px;justify-content:flex-start;gap:8px;padding:0 12px; }
+      .search input { display:block; }
+      .nav-btn { min-width:70px; }
+      .content { max-width:680px;padding:0 8px;margin:0 auto; }
+      .create-actions { grid-template-columns:repeat(3,1fr); }
+      .story { width:80px;height:140px; }
+      .grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+
+    @media (min-width:1024px) {
+      .app { padding-bottom:16px; }
+      .top-nav { grid-template-columns:320px 1fr 220px;padding:0 16px; }
+      .center { gap:8px;overflow:visible; }
+      .nav-btn { min-width:92px; }
+      .nav-btn .label { display:inline;margin-left:6px;font-size:12px; }
+      .desktop-only { display:inline-flex; }
+      .bottom-nav { display:none; }
+      .layout { max-width:1360px;margin:0 auto;padding:12px 16px 0;display:grid;grid-template-columns:280px minmax(0,1fr) 320px;gap:16px;align-items:start; }
+      .left-sidebar,.right-sidebar { display:block;position:sticky;top:calc(var(--nav) + 12px);max-height:calc(100vh - var(--nav) - 24px);overflow-y:auto; }
+      .content { max-width:590px;padding:0; }
+      .profile-cover { height:350px; }
+      .profile-main .avatar { width:168px;height:168px; }
+      .profile-actions { grid-template-columns:repeat(3,auto); }
+      .grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+
+      .messenger { display:block;position:fixed;right:20px;bottom:0;width:320px;background:#fff;border:1px solid var(--border);border-radius:10px 10px 0 0;box-shadow:0 8px 24px rgba(0,0,0,.14);z-index:1400;overflow:hidden; }
+      .ms-head { min-height:44px;padding:0 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);cursor:pointer; }
+      .ms-body { display:none; }
+      .messenger.open .ms-body { display:block; }
+      .ms-search { padding:10px; }
+      .ms-search input { width:100%;min-height:40px;border:none;outline:none;border-radius:999px;background:var(--bg);padding:0 12px; }
+      .ms-list { max-height:280px;overflow-y:auto; }
+
+      .chat { position:fixed;right:360px;bottom:0;width:300px;height:390px;background:#fff;border:1px solid var(--border);border-radius:10px 10px 0 0;box-shadow:0 8px 24px rgba(0,0,0,.16);z-index:1500;overflow:hidden; }
+      .chat.open { display:grid;grid-template-rows:46px 1fr 54px; }
+      .chat-head { padding:0 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);font-weight:600; }
+      .chat-msgs { padding:10px;overflow-y:auto;background:#f7f8fa; }
+      .msg { max-width:76%;border-radius:14px;padding:8px 10px;font-size:13px;margin-bottom:8px; }
+      .msg.them { background:#e4e6eb; }
+      .msg.me { margin-left:auto;background:#d8e7ff; }
+      .chat-row { border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 56px;gap:6px;align-items:center;padding:0 8px; }
+      .chat-row input { border:none;outline:none;background:var(--bg);border-radius:999px;min-height:38px;padding:0 10px; }
+      .send { border:none;border-radius:8px;min-height:38px;background:var(--blue);color:#fff;cursor:pointer; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top-nav">
+    <div class="left">
+      <div class="logo">f</div>
+      <label class="search"><i class="fa-solid fa-magnifying-glass"></i><input placeholder="Search Facebook" /></label>
+    </div>
+    <div class="center">
+      <button class="nav-btn nav-route active" data-page="home"><i class="fa-solid fa-house"></i><span class="label">Home</span></button>
+      <button class="nav-btn nav-route" data-page="friends"><i class="fa-solid fa-user-group"></i><span class="label">Friends</span></button>
+      <button class="nav-btn nav-route" data-page="watch"><i class="fa-solid fa-tv"></i><span class="label">Watch</span></button>
+      <button class="nav-btn nav-route desktop-only" data-page="marketplace"><i class="fa-solid fa-store"></i><span class="label">Marketplace</span></button>
+      <button class="nav-btn nav-route desktop-only" data-page="groups"><i class="fa-solid fa-users"></i><span class="label">Groups</span></button>
+    </div>
+    <div class="right">
+      <button class="icon-btn" id="openMessages"><i class="fa-brands fa-facebook-messenger"></i></button>
+      <button class="icon-btn" id="openNotifs"><i class="fa-solid fa-bell"></i></button>
+      <button class="icon-btn nav-route" data-page="profile"><img class="avatar xs" src="https://i.pravatar.cc/150?img=1" alt="" /></button>
+      <button class="icon-btn desktop-only" id="openMenu"><i class="fa-solid fa-caret-down"></i></button>
+    </div>
+  </header>
+
+  <main class="app">
+    <div class="layout">
+      <aside class="left-sidebar">
+        <button class="item-btn nav-route" data-page="profile"><img class="avatar sm" src="https://i.pravatar.cc/150?img=1" alt="" /> Bamidele Don</button>
+        <button class="item-btn nav-route" data-page="friends"><i class="fa-solid fa-user-group"></i> Friends</button>
+        <button class="item-btn"><i class="fa-solid fa-clock-rotate-left"></i> Memories</button>
+        <button class="item-btn"><i class="fa-solid fa-bookmark"></i> Saved</button>
+        <button class="item-btn nav-route" data-page="groups"><i class="fa-solid fa-users"></i> Groups</button>
+        <button class="item-btn nav-route" data-page="watch"><i class="fa-solid fa-tv"></i> Watch</button>
+        <button class="item-btn nav-route" data-page="marketplace"><i class="fa-solid fa-store"></i> Marketplace</button>
+        <h3 style="margin:12px 10px 8px;color:var(--muted)">Your Shortcuts</h3>
+        <div class="item-btn"><img src="https://picsum.photos/seed/group1/70/70" style="width:36px;height:36px;border-radius:6px;object-fit:cover" alt="" /> React Mastermind</div>
+        <div class="item-btn"><img src="https://picsum.photos/seed/group2/70/70" style="width:36px;height:36px;border-radius:6px;object-fit:cover" alt="" /> Mobile UI Club</div>
+        <div class="item-btn"><img src="https://picsum.photos/seed/group3/70/70" style="width:36px;height:36px;border-radius:6px;object-fit:cover" alt="" /> Designers of Lagos</div>
+      </aside>
+
+      <section class="content">
+        <section class="page active" id="homePage">
+          <div class="card create">
+            <div class="create-top"><img class="avatar" src="https://i.pravatar.cc/150?img=1" alt="" /><input class="mind" placeholder="What's on your mind, Bamidele?" /></div>
+            <div class="line"></div>
+            <div class="create-actions">
+              <button class="pill"><i class="fa-solid fa-video" style="color:#f3425f"></i> Photo/Video</button>
+              <button class="pill"><i class="fa-regular fa-image" style="color:#45bd62"></i> Photo</button>
+              <button class="pill"><i class="fa-regular fa-face-smile" style="color:#f7b928"></i> Feeling/Activity</button>
+            </div>
+          </div>
+
+          <div class="card stories">
+            <div class="stories-row">
+              <div class="story create-story"><img src="https://picsum.photos/seed/create-story/120/180" alt="" /><div class="plus"><i class="fa-solid fa-plus"></i></div><div class="labelx">Create Story</div></div>
+              <div class="story"><img src="https://picsum.photos/seed/story2/120/180" alt="" /><div class="overlay">Mia Chen</div></div>
+              <div class="story"><img src="https://picsum.photos/seed/story3/120/180" alt="" /><div class="overlay">Noah James</div></div>
+              <div class="story"><img src="https://picsum.photos/seed/story4/120/180" alt="" /><div class="overlay">Ava Wilson</div></div>
+              <div class="story"><img src="https://picsum.photos/seed/story5/120/180" alt="" /><div class="overlay">Leo Park</div></div>
+            </div>
+          </div>
+          <div id="postsWrap"></div>
+        </section>
+
+        <section class="page" id="friendsPage"><div class="card"><div class="header-row"><h2>Friends</h2><button class="icon-btn"><i class="fa-solid fa-gear"></i></button></div><div class="grid" id="friendsGrid"></div></div></section>
+        <section class="page" id="watchPage"><div class="card"><div class="header-row"><h2>Watch</h2><button class="icon-btn"><i class="fa-solid fa-magnifying-glass"></i></button></div><div class="grid" id="watchGrid"></div></div></section>
+        <section class="page" id="marketplacePage"><div class="card"><div class="header-row"><h2>Marketplace</h2><button class="icon-btn"><i class="fa-solid fa-sliders"></i></button></div><div class="grid" id="marketGrid"></div></div></section>
+        <section class="page" id="groupsPage"><div class="card"><div class="header-row"><h2>Groups</h2><button class="icon-btn"><i class="fa-solid fa-plus"></i></button></div><div class="grid" id="groupsGrid"></div></div></section>
+        <section class="page" id="profilePage">
+          <div class="card" style="overflow:visible">
+            <div class="profile-cover"><img src="https://picsum.photos/seed/profile-cover/1400/600" alt="" /></div>
+            <div class="profile-main">
+              <img class="avatar" src="https://i.pravatar.cc/150?img=1" alt="" />
+              <h1 style="margin-top:8px">Bamidele Don</h1>
+              <p style="color:var(--muted)">Frontend engineer. Building pixel-perfect interfaces.</p>
+              <p style="color:var(--muted)"><strong>12.4K</strong> followers</p>
+              <div class="profile-actions"><button class="action-btn blue"><i class="fa-solid fa-user-plus"></i> Add Friend</button><button class="action-btn gray"><i class="fa-brands fa-facebook-messenger"></i> Message</button><button class="action-btn gray"><i class="fa-solid fa-rss"></i> Follow</button></div>
+            </div>
+          </div>
+          <div class="card" style="padding:12px"><h3 style="margin-bottom:10px">Photos</h3><div class="grid" id="profileGrid"></div></div>
+        </section>
+      </section>
+
+      <aside class="right-sidebar">
+        <div class="card" style="padding:12px">
+          <h3 style="color:var(--muted);margin-bottom:8px">Sponsored</h3>
+          <div style="display:flex;gap:10px;margin-bottom:10px"><img src="https://picsum.photos/seed/ad1/180/120" style="width:86px;height:64px;object-fit:cover;border-radius:8px" alt="" /><div><strong>Design Sprint Masterclass</strong><br /><small style="color:var(--muted)">uxacademy.example</small></div></div>
+          <div style="display:flex;gap:10px"><img src="https://picsum.photos/seed/ad2/180/120" style="width:86px;height:64px;object-fit:cover;border-radius:8px" alt="" /><div><strong>Wireless Pro Headphones</strong><br /><small style="color:var(--muted)">soundplus.example</small></div></div>
+        </div>
+        <div class="card" style="padding:12px"><h3 style="color:var(--muted);margin-bottom:8px">Contacts</h3><div id="contactsList"></div></div>
+      </aside>
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="bottom-btn nav-route active" data-page="home"><i class="fa-solid fa-house"></i></button>
+    <button class="bottom-btn nav-route" data-page="friends"><i class="fa-solid fa-user-group"></i></button>
+    <button class="bottom-btn nav-route" data-page="watch"><i class="fa-solid fa-tv"></i></button>
+    <button class="bottom-btn nav-route" data-page="marketplace"><i class="fa-solid fa-store"></i></button>
+    <button class="bottom-btn" id="mobileNotif"><i class="fa-solid fa-bell"></i></button>
+    <button class="bottom-btn" id="mobileMenu"><i class="fa-solid fa-bars"></i></button>
+  </nav>
+
+  <div class="panel" id="notifPanel"><div class="title">Notifications</div><div class="body" id="notifBody"></div></div>
+  <div class="panel" id="menuPanel"><div class="title">Menu</div><div class="body"><button class="item-btn nav-route" data-page="profile"><i class="fa-solid fa-user"></i> Profile</button><button class="item-btn nav-route" data-page="friends"><i class="fa-solid fa-user-group"></i> Friends</button><button class="item-btn nav-route" data-page="watch"><i class="fa-solid fa-tv"></i> Watch</button><button class="item-btn nav-route" data-page="marketplace"><i class="fa-solid fa-store"></i> Marketplace</button><button class="item-btn nav-route" data-page="groups"><i class="fa-solid fa-users"></i> Groups</button></div></div>
+
+  <div class="messenger" id="messenger">
+    <div class="ms-head" id="msToggle"><strong>Messenger</strong><span><i class="fa-solid fa-ellipsis" style="margin-right:8px"></i><i class="fa-solid fa-chevron-up"></i></span></div>
+    <div class="ms-body"><div class="ms-search"><input placeholder="Search Messenger" /></div><div class="ms-list" id="msList"></div></div>
+  </div>
+  <div class="chat" id="chatWindow">
+    <div class="chat-head"><span id="chatName">Chat</span><button class="icon-btn" id="closeChat" style="width:30px;height:30px"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="chat-msgs" id="chatMsgs"></div>
+    <div class="chat-row"><input id="chatInput" placeholder="Type a message" /><button class="send" id="sendChat"><i class="fa-solid fa-paper-plane"></i></button></div>
+  </div>
+
+  <script>
+    const POSTS = Array.from({ length: 19 }, (_, i) => ({
+      user: ["Mia Chen","Noah James","Ava Wilson","Leo Park","Sofia Reed","Ethan Brooks","Liam Stone","Emma Lane","Chris Roy","Dani Cole","Jude Kim","Nina Fox","Mason Hill","Ivy Hart","Ryan Poe","Ella Cruz","Zane Bell","Theo Marsh","Lara Quinn"][i],
+      avatar: `https://i.pravatar.cc/150?img=${(i % 10) + 1}`,
+      time: `${(i % 11) + 1}h`,
+      text: [
+        "Lagos traffic showed me pepper today, but I still made it to the office before standup. Small wins matter.",
+        "Sunday jollof with turkey and cold malt hits different after a long week. Who is doing meal prep tonight?",
+        "Arsenal game nearly gave me BP, but we still move. Football weekend in Naija is always a full event.",
+        "Just paid for data again and this tariff keeps rising. Any solid network recommendations right now?",
+        "Started the week with early morning walk, prayer, and clear goals. Consistency is still the real flex.",
+        "Had amala and ewedu for lunch and now productivity don drop small. Food coma is real abeg.",
+        "Small business owners, keep pushing. Even one daily customer adds up when you stay consistent.",
+        "Power went out during my meeting, switched to hotspot and still delivered. Naija resilience no dey disappoint.",
+        "Weekend plan: wash car, visit family, then soft life with Netflix and chin chin.",
+        "If you are building something, start with what you have. Perfection can wait, progress cannot.",
+        "Morning market prices shocked me today. Omo, tomatoes and pepper are now premium commodities.",
+        "Quick reminder: save money before flexing. Emergency funds have saved me more than once this year.",
+        "Champions League nights plus suya by the roadside is top-tier happiness honestly.",
+        "Spent the evening helping my younger cousin with CV updates. We rise by lifting others.",
+        "Rain started just as I left work, but that fresh weather in the evening was worth it.",
+        "Business owners, check your expenses this week. Small leakages quietly finish profit.",
+        "Today I chose peace: no arguments online, just work, food, and gratitude.",
+        "Saturday owambe season is back. If you hear music from two streets away, just know party dey.",
+        "Ending the day thankful. Slow progress is still progress, and tomorrow is another chance to do better."
+      ][i],
+      likes: 120 + i * 9,
+      comments: 6 + i,
+      shares: 2 + (i % 6),
+      image: `https://picsum.photos/600/400?random=${i + 1}`
+    }));
+    const CONTACTS = [
+      { name: "Mia Chen", avatar: "https://i.pravatar.cc/150?img=2", msg: "Can you review this?", time: "2m" },
+      { name: "Noah James", avatar: "https://i.pravatar.cc/150?img=3", msg: "Landing page looks clean.", time: "8m" },
+      { name: "Ava Wilson", avatar: "https://i.pravatar.cc/150?img=4", msg: "We are live now.", time: "20m" },
+      { name: "Leo Park", avatar: "https://i.pravatar.cc/150?img=5", msg: "Sending file shortly.", time: "34m" },
+      { name: "Sofia Reed", avatar: "https://i.pravatar.cc/150?img=6", msg: "Thanks for the help.", time: "1h" },
+      { name: "Ethan Brooks", avatar: "https://i.pravatar.cc/150?img=7", msg: "Meeting at 3?", time: "2h" },
+      { name: "Liam Stone", avatar: "https://i.pravatar.cc/150?img=8", msg: "Lets sync tomorrow.", time: "3h" },
+      { name: "Emma Lane", avatar: "https://i.pravatar.cc/150?img=9", msg: "Great update today.", time: "5h" }
+    ];
+
+    const pages = { home: "homePage", friends: "friendsPage", watch: "watchPage", marketplace: "marketplacePage", groups: "groupsPage", profile: "profilePage" };
+
+    function renderPosts() {
+      const wrap = document.getElementById("postsWrap");
+      wrap.innerHTML = POSTS.map((p, i) => `<article class="card"><div class="post-head"><div class="post-user"><img class="avatar" src="${p.avatar}" alt="${p.user}" /><div class="meta"><div class="name">${p.user}</div><div class="time">${p.time} <i class="fa-solid fa-earth-africa"></i></div></div></div><button class="dots"><i class="fa-solid fa-ellipsis"></i></button></div><div class="post-body"><p class="post-text">${p.text}</p><img class="post-image" src="${p.image}" alt="Post image" /></div><div class="post-react"><span class="likes"><span class="like-dot"><i class="fa-solid fa-thumbs-up"></i></span> ${p.likes}</span><span>${p.comments} comments · ${p.shares} shares</span></div><div class="post-actions"><button class="post-btn like-btn"><i class="fa-regular fa-thumbs-up"></i> Like</button><button class="post-btn comment-btn" data-id="${i}"><i class="fa-regular fa-comment"></i> Comment</button><button class="post-btn"><i class="fa-solid fa-share"></i> Share</button></div><div class="comments" id="c-${i}"><div class="comment"><img class="avatar xs" src="https://i.pravatar.cc/150?img=10" alt="" /><div class="bubble"><strong>Rina</strong><br />Looks great already.</div></div><div class="comment"><img class="avatar xs" src="https://i.pravatar.cc/150?img=1" alt="" /><div class="bubble"><strong>You</strong><br />Thanks! Still polishing details.</div></div><input class="comment-input" placeholder="Write a comment..." /></div></article>`).join("");
+      document.querySelectorAll(".like-btn").forEach((btn) => btn.addEventListener("click", () => { btn.classList.toggle("liked"); btn.innerHTML = btn.classList.contains("liked") ? '<i class="fa-solid fa-thumbs-up"></i> Like' : '<i class="fa-regular fa-thumbs-up"></i> Like'; }));
+      document.querySelectorAll(".comment-btn").forEach((btn) => btn.addEventListener("click", () => document.getElementById(`c-${btn.dataset.id}`).classList.toggle("open")));
+    }
+
+    function tile(title, sub, img) { return `<article class="tile"><img src="${img}" alt="${title}" /><div class="body"><h4>${title}</h4><p>${sub}</p></div></article>`; }
+    function renderGrids() {
+      document.getElementById("friendsGrid").innerHTML = CONTACTS.map((c, i) => tile(c.name, `${10 + i} mutual friends`, `https://picsum.photos/seed/friend${i + 1}/500/400`)).join("");
+      document.getElementById("watchGrid").innerHTML = Array.from({ length: 9 }, (_, i) => tile(`Watch Video ${i + 1}`, "Trending now", `https://picsum.photos/seed/watch${i + 1}/700/500`)).join("");
+      document.getElementById("marketGrid").innerHTML = Array.from({ length: 9 }, (_, i) => tile(`Item ${i + 1}`, `$${(i + 2) * 15}`, `https://picsum.photos/seed/market${i + 1}/700/500`)).join("");
+      document.getElementById("groupsGrid").innerHTML = Array.from({ length: 9 }, (_, i) => tile(`Group ${i + 1}`, `${1200 + i * 89} members`, `https://picsum.photos/seed/groupx${i + 1}/700/500`)).join("");
+      document.getElementById("profileGrid").innerHTML = Array.from({ length: 9 }, (_, i) => `<article class="tile"><img src="https://picsum.photos/seed/profile${i + 1}/700/500" alt="Photo ${i + 1}" /></article>`).join("");
+    }
+
+    function renderContacts() {
+      document.getElementById("contactsList").innerHTML = CONTACTS.map((c) => `<button class="item-btn"><span style="position:relative"><img class="avatar sm" src="${c.avatar}" alt="${c.name}" /><span style="position:absolute;right:0;bottom:0;width:10px;height:10px;border-radius:50%;background:#31a24c;border:2px solid #fff"></span></span> ${c.name}</button>`).join("");
+      document.getElementById("notifBody").innerHTML = Array.from({ length: 10 }, (_, i) => `<button class="item-btn"><i class="fa-solid fa-bell" style="color:var(--blue)"></i> New update from friend #${i + 1}</button>`).join("");
+      document.getElementById("msList").innerHTML = CONTACTS.map((c) => `<button class="item-btn ms-contact" data-name="${c.name}"><img class="avatar sm" src="${c.avatar}" alt="${c.name}" /><div><strong>${c.name}</strong><br /><small style="color:var(--muted)">${c.msg}</small></div><small style="margin-left:auto;color:var(--muted)">${c.time}</small></button>`).join("");
+      document.querySelectorAll(".ms-contact").forEach((el) => el.addEventListener("click", () => openChat(el.dataset.name)));
+    }
+
+    function closePanels() { document.getElementById("notifPanel").classList.remove("open"); document.getElementById("menuPanel").classList.remove("open"); }
+    function showPage(page) {
+      Object.values(pages).forEach((id) => document.getElementById(id).classList.remove("active"));
+      document.getElementById(pages[page] || pages.home).classList.add("active");
+      document.querySelectorAll(".nav-route").forEach((el) => el.classList.toggle("active", el.dataset.page === page));
+      closePanels();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    document.querySelectorAll(".nav-route").forEach((el) => el.addEventListener("click", () => showPage(el.dataset.page)));
+    const notifPanel = document.getElementById("notifPanel"), menuPanel = document.getElementById("menuPanel");
+    document.getElementById("openNotifs").addEventListener("click", () => { menuPanel.classList.remove("open"); notifPanel.classList.toggle("open"); });
+    document.getElementById("openMenu").addEventListener("click", () => { notifPanel.classList.remove("open"); menuPanel.classList.toggle("open"); });
+    document.getElementById("mobileNotif").addEventListener("click", () => notifPanel.classList.toggle("open"));
+    document.getElementById("mobileMenu").addEventListener("click", () => menuPanel.classList.toggle("open"));
+
+    const messenger = document.getElementById("messenger");
+    document.getElementById("openMessages").addEventListener("click", () => messenger.classList.toggle("open"));
+    document.getElementById("msToggle").addEventListener("click", () => messenger.classList.toggle("open"));
+
+    const chat = document.getElementById("chatWindow"), chatName = document.getElementById("chatName"), chatMsgs = document.getElementById("chatMsgs"), chatInput = document.getElementById("chatInput");
+    function openChat(name) { chatName.textContent = name; chatMsgs.innerHTML = '<div class="msg them">Hey, are you free for a quick UI review?</div><div class="msg me">Yes, send it over.</div><div class="msg them">Awesome, sharing now.</div>'; chat.classList.add("open"); }
+    document.getElementById("closeChat").addEventListener("click", () => chat.classList.remove("open"));
+    function sendChat() { const text = chatInput.value.trim(); if (!text) return; const el = document.createElement("div"); el.className = "msg me"; el.textContent = text; chatMsgs.appendChild(el); chatMsgs.scrollTop = chatMsgs.scrollHeight; chatInput.value = ""; }
+    document.getElementById("sendChat").addEventListener("click", sendChat);
+    chatInput.addEventListener("keydown", (e) => { if (e.key === "Enter") sendChat(); });
+
+    document.addEventListener("click", (e) => {
+      const inNotif = notifPanel.contains(e.target) || e.target.closest("#openNotifs") || e.target.closest("#mobileNotif");
+      const inMenu = menuPanel.contains(e.target) || e.target.closest("#openMenu") || e.target.closest("#mobileMenu");
+      if (!inNotif) notifPanel.classList.remove("open");
+      if (!inMenu) menuPanel.classList.remove("open");
+    });
+
+    renderPosts(); renderGrids(); renderContacts();
+  </script>
+</body>
+</html>
